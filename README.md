@@ -12,6 +12,7 @@ https://nl.aliexpress.com/item/1005006745341347.html<br>
 <br>
 Main software ideas come from kristiantm/eink-family-calendar-esp32:<br>
 https://github.com/kristiantm/eink-family-calendar-esp32<br>
+Libraries used is the GxEPD2 and nlohmann-json<br>
 <br>
 The case can be found on thingiverse:<br>
 https://www.thingiverse.com/thing:4317459<br>
