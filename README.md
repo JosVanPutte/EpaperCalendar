@@ -19,3 +19,7 @@ https://www.thingiverse.com/thing:4317459<br>
 <br>
 The app uses google script to get the events from the calendar.<br>
 https://www.youtube.com/watch?v=8UmdqwY9AdA<br>
+<br>
+The epaper ESP32 in deep sleep mode uses less than 10 ma<br>
+<img src="https://github.com/JosVanPutte/EpaperCalendar/blob/main/EPaper%20ESP%200ma.jpg" alt="power" style="width:400px;height:200px;">
+
