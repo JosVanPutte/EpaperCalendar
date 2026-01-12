@@ -20,6 +20,9 @@ String googleId;
 
 const char setupWifi[] = "connect to wifi 'FridgeCalendar'";
 
+char timeStr[50];
+const char *monthName[] = { "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"};
+
 /**
  * sync time with NTP
  */
@@ -28,7 +31,12 @@ void syncTime() {
   configTime(0, 0, "nl.pool.ntp.org");
   gettimeofday(&tm, NULL);
   settimeofday(&tm, NULL);
+  struct tm wakeup;
+  bool ok = getLocalTime(&wakeup);
+  sprintf(timeStr, "wakeup on %d %s %d %02d:%02d:%02d", wakeup.tm_mday, monthName[wakeup.tm_mon], wakeup.tm_year % 100, wakeup.tm_hour, wakeup.tm_min, wakeup.tm_sec);
+  Serial.println(timeStr);
 }
+
 
 void goToSleep() {
   struct tm wakeup;
@@ -77,7 +85,7 @@ void setup() {
   syncTime();
   // get the calendar
   struct calendarEntries *myCalendar = getCalendar(googleId);
-  displayCalendar(myCalendar);
+  displayCalendar(timeStr, myCalendar);
   // go to sleep
   goToSleep();
 }

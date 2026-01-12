@@ -3,4 +3,4 @@
 #include "google.h"
 
 void initDisplay(const char* initMessage, bool show);
-void displayCalendar(struct calendarEntries *myCalendar);
+void displayCalendar(char *wakeup, struct calendarEntries *myCalendar);

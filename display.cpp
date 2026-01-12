@@ -58,22 +58,27 @@ void initDisplay(const char* initMessage, bool show)
   Serial.println("Initialize done");
 }
 
-void displayCalendar(struct calendarEntries *myCalendar) {
-  uint16_t y = tbh;
+void displayCalendar(char *wakeup, struct calendarEntries *myCalendar) {
+  uint16_t y = tbh / 2;
   Serial.printf("font height %d calendar entries %d\n", tbh, calEntryCount);
+  Serial.println(wakeup);
   display.setFullWindow();
   do
   {
     display.fillScreen(GxEPD_WHITE);
+    display.setFont(&FreeMono18pt7b);
+    display.setCursor(0, y);
+    display.print(wakeup);
+    y += tbh;
     for(int ntry = 0; ntry < calEntryCount; ntry++) {
       display.setFont(&FreeMonoBold18pt7b);
       display.setCursor(0, y);
       display.print(myCalendar[ntry].calTime);
-      y += tbh + 2;
+      y += tbh / 2 + 2;
       display.setFont(&FreeMono18pt7b);
       display.setCursor(0, y);
       display.print(myCalendar[ntry].calTitle);
-      y += tbh + 2;
+      y += tbh;
     }
   }  while (display.nextPage());
 }
