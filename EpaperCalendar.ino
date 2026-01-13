@@ -41,9 +41,9 @@ void syncTime() {
 void goToSleep() {
   struct tm wakeup;
   bool ok = getLocalTime(&wakeup);
-  int secondsToSleep = 24 * 60 * 60;
+  uint64_t secondsToSleep = 24 * 60 * 60;
   if (!ok) {
-    Serial.println("Could not get time ! Sleep for 24 hours.");
+    Serial.printf("Sleep for %d minutes.\n", secondsToSleep / 60);
   } else {
     Serial.printf("up %d s time %02d:%02d:%02d\n", millis() / 1000, wakeup.tm_hour, wakeup.tm_min, wakeup.tm_sec);
     struct tm midnight = wakeup;
@@ -55,9 +55,9 @@ void goToSleep() {
     time_t tomorrow = mktime(&midnight);
     double timeDiff = difftime(tomorrow, today);
     secondsToSleep = trunc(timeDiff) + 1;
-    Serial.printf("Midnight is %d seconds away\n", secondsToSleep);
+    Serial.printf("Midnight is %llu seconds away\n", secondsToSleep);
   }
-  esp_sleep_enable_timer_wakeup(secondsToSleep * 1000000); 
+  esp_sleep_enable_timer_wakeup(secondsToSleep * 1000000ULL); 
   esp_deep_sleep_start();
 }
 
