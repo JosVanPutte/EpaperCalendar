@@ -3,6 +3,7 @@
 
 #include <WiFiManager.h>
 #include <time.h>
+#include <rom/rtc.h>
 #include "google.h"
 #include "storage.h"
 #include "display.h"
@@ -36,15 +37,9 @@ void syncTime() {
   sprintf(timeStr, "wakeup on %d %s %d %02d:%02d:%02d", wakeup.tm_mday, monthName[wakeup.tm_mon], wakeup.tm_year % 100, wakeup.tm_hour, wakeup.tm_min, wakeup.tm_sec);
   Serial.println(timeStr);
 }
-
-
-void goToSleep() {
+/**
   struct tm wakeup;
   bool ok = getLocalTime(&wakeup);
-  uint64_t secondsToSleep = 24 * 60 * 60;
-  if (!ok) {
-    Serial.printf("Sleep for %d minutes.\n", secondsToSleep / 60);
-  } else {
     Serial.printf("up %d s time %02d:%02d:%02d\n", millis() / 1000, wakeup.tm_hour, wakeup.tm_min, wakeup.tm_sec);
     struct tm midnight = wakeup;
     midnight.tm_hour = 23;
@@ -56,16 +51,39 @@ void goToSleep() {
     double timeDiff = difftime(tomorrow, today);
     secondsToSleep = trunc(timeDiff) + 1;
     Serial.printf("Midnight is %llu seconds away\n", secondsToSleep);
-  }
+
+*/
+void goToSleep(int s) {
+  uint64_t secondsToSleep = s;
+  Serial.printf("Sleep for %d minutes.\n", secondsToSleep / 60);
   esp_sleep_enable_timer_wakeup(secondsToSleep * 1000000ULL); 
   esp_deep_sleep_start();
 }
 
+long bootCnt;
+long totalTime;
+
 void setup() {
   Serial.begin(115200);
+  pinMode(2, OUTPUT);
+  digitalWrite(2, HIGH);
   nvs_handle_t nvs = initNvs();
   Serial.println();
   Serial.println("setup");
+  String bc = getNonVolatile(nvs, "bootCnt");
+  String tc = getNonVolatile(nvs, "totalTime");
+  if (bc.isEmpty() || tc.isEmpty()) {
+    Serial.println("NVS values ??");
+  } else {
+    bootCnt = atol(bc.c_str());
+    totalTime = atol(tc.c_str());
+  }
+  Serial.printf("bootCnt %ld total %ld s\n", bootCnt, totalTime / 1000);
+  if (rtc_get_reset_reason(0) == POWERON_RESET) {
+    Serial.println("POWER ON RESET");
+    bootCnt = 0;
+    totalTime = 0;
+  }
 #ifndef GOOGLE_ID
   googleId = getNonVolatile(nvs, "scriptId");
 #endif
@@ -85,9 +103,16 @@ void setup() {
   syncTime();
   // get the calendar
   struct calendarEntries *myCalendar = getCalendar(googleId);
-  displayCalendar(timeStr, myCalendar);
+  char buf[100];
+  bootCnt++;
+  totalTime += millis();
+  sprintf(buf, "boot cnt %d total %ld s", bootCnt, totalTime / 1000);
+  displayCalendar(buf, myCalendar);
   // go to sleep
-  goToSleep();
+  setNonVolatile(nvs, "bootCnt", bootCnt);
+  setNonVolatile(nvs, "totalTime", totalTime);
+  digitalWrite(2, LOW);
+  goToSleep(60 * 60);
 }
 
 void loop() {
